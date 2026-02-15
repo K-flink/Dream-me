@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dream Me!</title>
+
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff00ea 0%, #00d6e6 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: row-reverse;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: #4a4a4a;
+            padding: 20px 10px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #3a3a3a;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        @font-face {
+            font-family: "DreamFont";
+            src: url("fonts/Apayah Loe.ttf") format("truetype");
+            font-weight: normal;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .logo span {
+            font-family: 'DreamFont', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fd9f24, #d100d8, #00d9ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .sign-in {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .sign-up {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .search-box {
+            margin-top: 70px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #5a5a5a;
+            color: white;
+            font-size: 12px;
+        }
+
+        .search-box input::placeholder {
+            color: #aaa;
+        }
+
+        .themes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .theme-card {
+            background-color: #5a5a5a;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .theme-card.selected {
+            border-color: #667eea;
+            background-color: #33465e;
+        }
+
+        .theme-img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+
+        .theme-name {
+            text-align: center;
+            color: #ddd;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .dreamBtn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #fd9f24 0%, #d100d8 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dreamBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .dreamBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 80px 40px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area {
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            background-color: #d0d0d0;
+        }
+
+        .upload-text {
+            color: #999;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #imagePreview {
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        #resultCanvas {
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .upload-area.has-image .upload-text {
+            display: none;
+        }
+
+        .upload-area.has-image #imagePreview,
+        .upload-area.has-result #resultCanvas {
+            display: block;
+        }
+
+        .upload-area.has-result #imagePreview {
+            display: none;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .download-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+        }
+
+        .download-button.visible {
+            display: block;
+        }
+
+        .processing {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            display: none;
+            z-index: 2000;
+        }
+
+        .processing.visible {
+            display: block;
+        }
+
+        .edit-section {
+            margin-top: 20px;
+        }
+
+        .edit-section input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="logo.png" alt="Dream Me Logo">
+            <span>Dream Me!</span>
+        </div>
+        <div class="auth-buttons">
+            <button class="sign-in">Sign In</button>
+            <button class="sign-up">Sign Up</button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-text">Drop Image Here</div>
+            <img id="imagePreview" alt="Preview">
+            <canvas id="resultCanvas"></canvas>
+        </div>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="sidebar">
+        <div class="search-box">
+            <input type="text" placeholder="Search for theme....">
+        </div>
+
+        <div class="themes">
+            <div class="theme-card valentine" data-theme="valentine">
+            <img src="dream me valentine icon.jpg" class="theme-img" alt="">
+                <div class="theme-name">Valentine's</div>
+            </div>
+            <div class="theme-card christmas" data-theme="christmas">
+             <img src="christmas icon.jpg" class="theme-img" alt="">
+                <div class="theme-name">Christmas</div>
+            </div>
+            <div class="theme-card newyear" data-theme="newyear">
+                <img src="new years icon.jpg" class="theme-img" alt="">
+                <div class="theme-name">New Years</div>
+            </div>
+            <div class="theme-card halloween" data-theme="halloween">
+                <img src="halloween icon.jpg" class="theme-img" alt="">
+                <div class="theme-name">Halloween</div>
+            </div>
+            <div class="edit-section">
+                <h3 style="color:white; margin-bottom:10px;">Adjust</h3>
+
+                <label style="color:white;">Brightness</label>
+                <input type="range" id="brightness" min="0.5" max="2" step="0.1" value="1">
+
+                <label style="color:white;">Contrast</label>
+                <input type="range" id="contrast" min="0.5" max="2" step="0.1" value="1">
+
+                <label style="color:white;">Saturation</label>
+                <input type="range" id="saturation" min="0.5" max="2" step="0.1" value="1">
+            </div>
+            <div class="edit-section" style="margin-top:20px;">
+                <h3 style="color:white; margin-bottom:10px;">Text</h3>
+
+                <input type="text" id="textInput" placeholder="Enter text..."
+                        style="width:100%; padding:5px; margin-bottom:10px;">
+
+                <label style="color:white;">Text Size</label>
+                <input type="range" id="textSize" min="20" max="100" value="40">
+
+                <label style="color:white;">Text Color</label>
+                <input type="color" id="textColor" value="#ffffff">
+                
+                <label style="color:white;">Font</label>
+                <select id="fontSelect" style="width:100%; margin-bottom:10px;">
+                <option value="Arial">Arial</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Courier New">Courier</option>
+                <option value="Times New Roman">Times</option>
+                <option value="Impact">Impact</option>
+                </select>
+
+                <button id="addTextBtn" style="margin-top:10px; width:100%;">Add Text</button>
+            </div>
+
+            <button class="dreamBtn" id="dreamButton" disabled>Dream It!</button>
+        </div>
+
+        
+
+     <button class="download-button" id="downloadButton">Download Image</button>
+    <div class="processing" id="processing">Dreaming...</div>
+
+    <script src="dreamMe.js"></script>
+
+    </body>
+</html>
