@@ -16,23 +16,28 @@ const textColor = document.getElementById("textColor");
 const addTextBtn = document.getElementById("addTextBtn");
 const fontSelect = document.getElementById("fontSelect");
 
-const valentineOverlays = [
-  "assets/valentines/filter-1.png",
-  "assets/valentines/filter-2.png",
-  "assets/valentines/filter-3.png",
-  "assets/valentines/filter-4.png",
-  "assets/valentines/filter-5.png",
-  "assets/valentines/filter-6.png",
-  "assets/valentines/filter-7.png",
-  "assets/valentines/filter-8.png",
-  "assets/valentines/filter-9.png",
-  "assets/valentines/filter-10.png",
-  "assets/valentines/filter-11.png",
-  "assets/valentines/filter-12.png",
-  "assets/valentines/filter-13.png",
-  "assets/valentines/filter-15.png",
-  "assets/valentines/filter-16.png",
+const valentinePortraitOverlays = [
+  "assets/valentines/portrait/filter-1.png",
+  "assets/valentines/portrait/filter-2.png",
+  "assets/valentines/portrait/filter-3.png",
+  "assets/valentines/portrait/filter-4.png",
 ];
+
+const valentineLandscapeOverlays = [
+  "assets/valentines/landscape/filter-5.png",
+  "assets/valentines/landscape/filter-6.png",
+  "assets/valentines/landscape/filter-7.png",
+  "assets/valentines/landscape/filter-8.png",
+  "assets/valentines/landscape/filter-9.png",
+  "assets/valentines/landscape/filter-10.png",
+  "assets/valentines/landscape/filter-11.png",
+  "assets/valentines/landscape/filter-12.png",
+  "assets/valentines/landscape/filter-13.png",
+  "assets/valentines/landscape/filter-14.png",
+  "assets/valentines/landscape/filter-15.png",
+  "assets/valentines/landscape/filter-16.png",
+];
+
 
 let draggingText = null;
 let offsetX = 0;
@@ -43,11 +48,43 @@ let textLayers = [];
 
 let selectedFile = null;
 
+let selectedOverlayImage = null;
+
+
 /*This is how it uploads*/
 
-uploadArea.onclick = () => fileInput.click();
+uploadArea.onclick = () => {
+  if (!selectedFile) {
+    fileInput.value = null;
+    fileInput.click();
+  }
+};
 
-/* image preview*/
+uploadArea.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  uploadArea.classList.add("dragging");
+});
+
+uploadArea.addEventListener("dragleave", () => {
+  uploadArea.classList.remove("dragging");
+});
+
+uploadArea.addEventListener("drop", (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove("dragging");
+
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+
+  selectedFile = file;
+  fileInput.files = e.dataTransfer.files;
+
+  imagePreview.src = URL.createObjectURL(file);
+  uploadArea.classList.add("has-image");
+  dreamButton.disabled = false;
+});
+
+/*image preview*/
 
 const imagePreview = document.getElementById("imagePreview");
 
@@ -77,6 +114,23 @@ dreamButton.onclick = () => {
     resultCanvas.height = img.height;
 
     currentImage = img;
+    const isPhotoPortrait = img.height > img.width;
+
+    let overlaysToUse = isPhotoPortrait
+      ? valentinePortraitOverlays
+      : valentineLandscapeOverlays;
+
+    selectedOverlaySrc =
+      overlaysToUse[Math.floor(Math.random() * overlaysToUse.length)];
+
+    selectedOverlayImage = new Image();
+    selectedOverlayImage.src = selectedOverlaySrc;
+
+selectedOverlayImage.onload = () => {
+  drawCanvas();
+};
+
+
     drawCanvas();
 
     uploadArea.classList.add("has-result");
@@ -85,67 +139,26 @@ dreamButton.onclick = () => {
   };
 };
 
+const newPhotoBtn = document.getElementById("newPhotoBtn");
 
-  function applyThemeEffect(theme) {
-  if (selectedTheme === "valentine") {
+newPhotoBtn.onclick = () => {
+  // Reset state
+  selectedFile = null;
+  currentImage = null;
+  selectedOverlayImage = null;
+  textLayers = [];
 
-  const randomStyle = Math.floor(Math.random() * 3);
+  // Clear canvas
+  ctx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
 
-  // Option 1 or 2: Add pink overlay + glow
-  if (randomStyle === 1 || randomStyle === 2) {
-    // Pink tint
-    ctx.fillStyle = "rgba(255, 105, 180, 0.15)";
-    ctx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
+  // Reset UI
+  imagePreview.src = "";
+  uploadArea.classList.remove("has-image");
+  uploadArea.classList.remove("has-result");
+  downloadButton.classList.remove("visible");
 
-    // Soft glow
-    ctx.shadowColor = "rgba(255, 105, 180, 0.6)";
-    ctx.shadowBlur = 40;
-    ctx.drawImage(currentImage, 0, 0);
-    ctx.shadowBlur = 0;
-  }
-
-  // Option 0 or 2: Add frame overlay
-  if (randomStyle === 0 || randomStyle === 2) {
-    const randomOverlay =
-      valentineOverlays[Math.floor(Math.random() * valentineOverlays.length)];
-
-    const overlayImage = new Image();
-    overlayImage.src = randomOverlay;
-
-    overlayImage.onload = () => {
-      ctx.drawImage(
-        overlayImage,
-        0,
-        0,
-        resultCanvas.width,
-        resultCanvas.height
-      );
-
-      drawTextLayers();
-    };
-
-    return;
-  }
-
-  drawTextLayers();
-}
-  
-  if (theme === "christmas") {
-    ctx.fillStyle = "rgba(0, 150, 0, 0.2)";
-    ctx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
-  }
-
-  if (theme === "halloween") {
-    ctx.fillStyle = "rgba(255, 140, 0, 0.25)";
-    ctx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
-  }
-
-  if (theme === "newyear") {
-    ctx.fillStyle = "rgba(255, 215, 0, 0.2)";
-    ctx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
-  }
-}
-
+  dreamButton.disabled = true;
+};
 
 
 /*for the theme buttons*/
@@ -166,66 +179,29 @@ themeCards.forEach(card => {
 function drawCanvas() {
   if (!currentImage) return;
 
-  resultCanvas.width = currentImage.width;
-  resultCanvas.height = currentImage.height;
-
   ctx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
 
-  // Apply sliders
-  ctx.filter = `
-    brightness(${brightnessSlider.value})
-    contrast(${contrastSlider.value})
-    saturate(${saturationSlider.value})
-  `;
+  ctx.filter = `brightness(${brightnessSlider.value})
+                contrast(${contrastSlider.value})
+                saturate(${saturationSlider.value})`;
 
   ctx.drawImage(currentImage, 0, 0);
-  ctx.filter = "none";
 
-  // VALENTINE THEME
-  if (selectedTheme === "valentine") {
-
-    const randomStyle = Math.floor(Math.random() * 3);
-
-    // Pink overlay + glow
-    if (randomStyle === 1 || randomStyle === 2) {
-
-      ctx.fillStyle = "rgba(255, 182, 193, 0.25)";
-      ctx.fillRect(0, 0, resultCanvas.width, resultCanvas.height);
-
-      ctx.shadowColor = "rgba(255, 105, 180, 0.6)";
-      ctx.shadowBlur = 50;
-      ctx.globalCompositeOperation = "lighter";
-      ctx.drawImage(currentImage, 0, 0);
-      ctx.globalCompositeOperation = "source-over";
-      ctx.shadowBlur = 0;
-    }
-
-    // Frame overlay
-    if (randomStyle === 0 || randomStyle === 2) {
-      const randomOverlay =
-        valentineOverlays[Math.floor(Math.random() * valentineOverlays.length)];
-
-      const overlayImage = new Image();
-      overlayImage.src = randomOverlay;
-
-      overlayImage.onload = () => {
-        ctx.drawImage(
-          overlayImage,
-          0,
-          0,
-          resultCanvas.width,
-          resultCanvas.height
-        );
-
-        drawTextLayers();
-      };
-
-      return; // wait for overlay before drawing text
-    }
+  if (selectedOverlayImage) {
+    ctx.drawImage(
+      selectedOverlayImage,
+      0,
+      0,
+      resultCanvas.width,
+      resultCanvas.height
+    );
   }
+
+  ctx.filter = "none";
 
   drawTextLayers();
 }
+
 
 function drawTextLayers() {
   textLayers.forEach(text => {
